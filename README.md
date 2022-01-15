@@ -30,7 +30,7 @@ openssl genrsa -out server-key.pem 4096
 
 **Generate a certificate signing request**
 ```
-openssl req -subj "/CN=example.com" -sha256 -new -key server-key.pm -out request.csr
+openssl req -subj "/CN=example.com" -sha256 -new -key server-key.pem -out request.csr
 ```
 
 # Setting Up Certificate Extensions
@@ -46,8 +46,7 @@ echo extendedKeyUsage = serverAuth >> extfile.cnf
 
 Now you’re ready to combine all the components and generate a signed certificate:
 ```
-openssl x509 -req -days 365 -sha256 \
-    -in request.csr \
+openssl x509 -req -days 365 -sha256 -in request.csr \
     -CA ca-public.pem \
     -CAkey ca-private.pem \
     -CAcreateserial \
@@ -75,13 +74,7 @@ openssl req -subj '/CN=client' -new -key client-key.pem -out client-request.csr
 echo extendedKeyUsage = clientAuth >> extfile-client.cnf
 ```
 ```
-openssl x509 -req -days 365 -sha256 \
-     -in client-request.csr \ 
-     -CA ca-public.pem \
-     -CAkey ca-private.pem \
-     -CAcreateserial \
-     -extfile extfile-client.cnf \
-     -out client-certificate.pem
+openssl x509 -req -days 365 -sha256 -in client-request.csr -CA ca-public.pem -CAkey ca-private.pem -CAcreateserial -extfile extfile-client.cnf -out client-certificate.pem
 ```
 
 # Preparing to Configure Docker
@@ -98,6 +91,16 @@ To overwrite docker service daemon, create a new file /etc/systemd/system/docker
 [Service]
 ExecStart=
 ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2376 --tlsverify --tlscacert=ca-public.pem --tlscert=certificate.pem --tlskey=server-key.pem
+```
+
+reload unix service daemon
+```
+systemctl daemon-reload
+```
+
+check docker service status
+```
+systemctl status docker
 ```
 
 # Configuring the Docker Client
