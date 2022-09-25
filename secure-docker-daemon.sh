@@ -1,3 +1,41 @@
+#!/bin/bash
+# 
+# Configure and run Docker:
+#
+#     https://docs.docker.com/engine/admin/
+#
+# Docker daemon to override the default service structure
+# Docker.service.d file under /etc/systemd/system/
+# Creating the override.conf drop-in file.
+# One of the certificates created by running this file
+# set the server keys on the service side by turning on TLS security
+# we need to specify.
+#
+#     $ pwd
+#     /etc/systemd/system/docker.service.d
+#     $ vim override.conf
+#     [Service]
+#     ExecStart=
+#     ExecStart=/usr/bin/dockerd -D -H unix:///var/run/docker.sock --tlsverify  --tlscert=~/.docker/server-cert.pem --tlscacert=~/.docker/ca.pem --tlskey=~/.docker/server-key.pem -H tcp://0.0.0.0:2376
+#
+#
+# There are 2 ways to gain secure access to Docker daemon with TLS enabled
+# 
+# 1. Using the necessary options on the Docker client:
+#
+#     $ docker                       \
+#         --tlsverify                \
+#         --tlscacert=ca.pem         \
+#         --tlscert=cert.pem         \
+#         --tlskey=key.pem           \
+#         -H localhost:2376 info
+#
+# 2. Using DOCKER environment variables:
+#
+# export DOCKER_TLS_VERIFY="1"
+# export DOCKER_HOST="tcp://0.0.0.0:2376"
+# export DOCKER_CERT_PATH="/home/fardiansyah/.docker"
+
 set -eu
 
 #set -x ; debugging
